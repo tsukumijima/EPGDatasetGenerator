@@ -49,7 +49,7 @@ def main(
     edcb.setConnectTimeOutSec(60)  # かなり時間かかることも見据えて長めに設定
 
     # 古い日付から EPG データを随時 JSONL ファイルに保存
-    with jsonlines.open('epg_datasets.jsonl', mode='w') as writer:
+    with jsonlines.open('epg_dataset.jsonl', mode='w') as writer:
 
         # 1 週間ごとに EDCB から過去の EPG データを取得
         ## sendEnumPgArc は 1 回のリクエストで取得できるデータ量に制限があるため、1 週間ごとに取得する

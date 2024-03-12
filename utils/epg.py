@@ -61,7 +61,7 @@ def FormatString(string: str) -> str:
 
 def RemoveSymbols(string: str) -> str:
     """
-    文字列から囲み文字や記号、番組枠名を除去する
+    文字列から囲み文字・記号・番組枠名などのノイズを除去する
 
     Args:
         string (str): 文字列
@@ -125,17 +125,21 @@ def RemoveSymbols(string: str) -> str:
     # 本来 ARIB 外字である記号の一覧
     # ref: https://ja.wikipedia.org/wiki/%E7%95%AA%E7%B5%84%E8%A1%A8
     # ref: https://github.com/xtne6f/EDCB/blob/work-plus-s/EpgDataCap3/EpgDataCap3/ARIB8CharDecode.cpp#L1319
-    mark = ('新|終|再|交|映|手|声|多|副|字|文|CC|OP|二|S|B|SS|無|無料'
+    mark = ('新|終|再|交|映|手|声|多|副|字|文|CC|OP|二|S|B|SS|無|無料|'
         'C|S1|S2|S3|MV|双|デ|D|N|W|P|H|HV|SD|天|解|料|前|後初|生|販|吹|PPV|'
         '演|移|他|収|・|英|韓|中|字/日|字/日英|3D|2K|4K|8K|5.1|7.1|22.2|60P|120P|d|HC|HDR|SHV|UHD|VOD|配|初')
-    pattern1 = re.compile(r'\((二|字|再)\)', re.IGNORECASE)  # 通常の括弧で囲まれている記号
+    pattern1 = re.compile(r'\((二|字|再|吹|無料)\)', re.IGNORECASE)  # 通常の括弧で囲まれている記号
     pattern2 = re.compile(r'\[(' + mark + r')\]', re.IGNORECASE)
     pattern3 = re.compile(r'【(' + mark + r')】', re.IGNORECASE)
     result = pattern1.sub(' ', result)
     result = pattern2.sub(' ', result)
     result = pattern3.sub(' ', result)
 
+    # 前後の半角スペースを削除する
+    result = result.strip()
+
     # 番組枠名などのノイズを削除する
+    ## 正規表現でゴリ押し執念の削除を実行………
     result = re.sub(r'※2K放送', '', result)
     result = re.sub(r'【無料】', '', result)
     result = re.sub(r'【KNTV】', '', result)
@@ -144,7 +148,6 @@ def RemoveSymbols(string: str) -> str:
     result = re.sub(r'【字幕】', '', result)
     result = re.sub(r'【字幕スーパー】', '', result)
     result = re.sub(r'【解説放送】', '', result)
-    result = re.sub(r'\[釣り\]', '', result)
     result = re.sub(r'<独占>', '', result)
     result = re.sub(r'【独占】', '', result)
     result = re.sub(r'<独占放送>', '', result)
@@ -160,6 +163,8 @@ def RemoveSymbols(string: str) -> str:
     result = re.sub(r'【.*?日本初.*?】', '', result)
     result = re.sub(r'【.*?初放送.*?】', '', result)
     result = re.sub(r'<.*?一挙.*?>', '', result)
+    result = re.sub(r'^TV初(☆|◆|◇)', '', result)
+    result = re.sub(r'^\[(録|映画|バラエティ|旅バラエティ|釣り|プロレス|ゴルフ|プロ野球|高校野球|ゴルフ|テニス|モーター|モータースポーツ|卓球|ラグビー|ボウリング|バレーボール|アメリカンフットボール)\]', '', result)
     result = re.sub(r'^特: ', '', result)
     result = re.sub(r'^アニメ ', '', result)
     result = re.sub(r'^アニメ・', '', result)
