@@ -1,4 +1,6 @@
 {
+    // JSONL が見やすくなるように折り返しを無効化
+    "editor.wordWrap": "off",
     // Pylance の Type Checking を有効化
     "python.languageServer": "Pylance",
     "python.analysis.typeCheckingMode": "strict",

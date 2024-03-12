@@ -29,7 +29,8 @@ import asyncio
 import datetime
 import socket
 import time
-from typing import BinaryIO, Callable, Literal, TypedDict, TypeVar
+from typing import BinaryIO, Callable, Literal, TypeVar
+from typing_extensions import TypedDict
 
 # ジェネリック型
 T = TypeVar('T')
