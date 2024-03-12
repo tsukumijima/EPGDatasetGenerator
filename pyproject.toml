@@ -9,6 +9,7 @@ classifiers = ["Private :: Do Not Upload"]
 [tool.poetry.dependencies]
 python = "^3.11"
 google-generativeai = "^0.4.0"
+pydantic = "^2.6.4"
 python-dotenv = "^1.0.1"
 jsonlines = "^4.0.0"
 typer = "^0.9.0"
