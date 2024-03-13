@@ -60,6 +60,7 @@ def main(
         print(f'ファイル {subset_path} は既に存在しています。')
         return
 
+    all_epg_count: int = 0
     terrestrial_data: list[EPGDatasetSubset] = []
     free_bs_data: list[EPGDatasetSubset] = []
     paid_bs_cs_data: list[EPGDatasetSubset] = []
@@ -68,6 +69,7 @@ def main(
     with jsonlines.open(dataset_path, 'r') as reader:
         for obj in reader:
             data = EPGDatasetSubset.model_validate(obj)
+            all_epg_count += 1
             if not meets_condition(data):
                 continue
             title_desc_key = (data.title, data.description)
@@ -82,6 +84,8 @@ def main(
             elif is_paid_bs_cs(data.network_id, data.service_id):
                 paid_bs_cs_data.append(data)
 
+    print(f'データセットに含まれる番組数: {all_epg_count}')
+
     # 地デジ: 60% / BS (無料放送): 30% / BS (有料放送) & CS: 10% の割合でランダムにサンプリング
     subsets: list[EPGDatasetSubset] = []
     subsets.extend(random.sample(terrestrial_data, int(subset_size * 0.6)))
@@ -92,7 +96,7 @@ def main(
     ## ID は最初が番組開始時刻になっているため、ソートすることで自動的に時系列になる
     subsets.sort(key=lambda x: x.id)
 
-    print(f'Writing to {subset_path} ...')
+    print(f'{subset_path} に書き込んでいます...')
     with jsonlines.open(subset_path, 'w') as writer:
         for subset in subsets:
             writer.write(subset.model_dump(mode='json'))
