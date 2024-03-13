@@ -85,6 +85,7 @@ def main(
                 paid_bs_cs_data.append(data)
 
     print(f'データセットに含まれる番組数: {all_epg_count}')
+    print(f'重複を除いた番組数: {len(unique_titles)}')
 
     # 地デジ: 50% / BS (無料放送): 35% / BS (有料放送) & CS: 15% の割合でランダムにサンプリング
     subsets: list[EPGDatasetSubset] = []
