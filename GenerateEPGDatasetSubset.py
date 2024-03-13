@@ -87,11 +87,11 @@ def main(
     print(f'データセットに含まれる番組数: {all_epg_count}')
     print(f'重複を除いた番組数: {len(unique_titles)}')
 
-    # 地デジ: 50% / BS (無料放送): 35% / BS (有料放送) & CS: 15% の割合でランダムにサンプリング
+    # 地デジ: 60% / BS (無料放送): 30% / BS (有料放送) & CS: 10% の割合でランダムにサンプリング
     subsets: list[EPGDatasetSubset] = []
-    subsets.extend(random.sample(terrestrial_data, int(subset_size * 0.5)))
-    subsets.extend(random.sample(free_bs_data, int(subset_size * 0.35)))
-    subsets.extend(random.sample(paid_bs_cs_data, int(subset_size * 0.15)))
+    subsets.extend(random.sample(terrestrial_data, int(subset_size * 0.6)))
+    subsets.extend(random.sample(free_bs_data, int(subset_size * 0.3)))
+    subsets.extend(random.sample(paid_bs_cs_data, int(subset_size * 0.1)))
 
     # ID でソート
     ## ID は最初が番組開始時刻になっているため、ソートすることで自動的に時系列になる
