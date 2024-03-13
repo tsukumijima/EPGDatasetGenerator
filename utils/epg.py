@@ -159,7 +159,7 @@ def RemoveSymbols(string: str) -> str:
     mark = ('新|終|再|交|映|手|声|多|副|字|文|CC|OP|二|S|B|SS|無|無料|'
         'C|S1|S2|S3|MV|双|デ|D|N|W|P|H|HV|SD|天|解|料|前|後初|生|販|吹|PPV|'
         '演|移|他|収|・|英|韓|中|字/日|字/日英|3D|2K|4K|8K|5.1|7.1|22.2|60P|120P|d|HC|HDR|SHV|UHD|VOD|配|初')
-    pattern1 = re.compile(r'\((二|字|字幕|再|再放送|吹|吹替|無料)\)', re.IGNORECASE)  # 通常の括弧で囲まれている記号
+    pattern1 = re.compile(r'\((二|字|字幕|再|再放送|吹|吹替|無料|無料放送)\)', re.IGNORECASE)  # 通常の括弧で囲まれている記号
     pattern2 = re.compile(r'\[(' + mark + r')\]', re.IGNORECASE)
     pattern3 = re.compile(r'【(' + mark + r')】', re.IGNORECASE)
     result = pattern1.sub(' ', result)
@@ -178,6 +178,7 @@ def RemoveSymbols(string: str) -> str:
     result = re.sub(r'【韓】', '', result)
     result = re.sub(r'【字幕】', '', result)
     result = re.sub(r'【字幕スーパー】', '', result)
+    result = re.sub(r'【リクエスト】', '', result)
     result = re.sub(r'【解説放送】', '', result)
     result = re.sub(r'<独占>', '', result)
     result = re.sub(r'【独占】', '', result)
@@ -241,6 +242,7 @@ def RemoveSymbols(string: str) -> str:
     result = re.sub(r'^(真夜中ドラマ|シンドラ|ドラマL|Zドラマ|よるおびドラマ|金曜ドラマDEEP)・', '', result)
     result = re.sub(r'^(真夜中ドラマ|シンドラ|ドラマL|Zドラマ|よるおびドラマ|金曜ドラマDEEP)「', '「', result)
     result = re.sub(r'^(真夜中ドラマ|シンドラ|ドラマL|Zドラマ|よるおびドラマ|金曜ドラマDEEP)『', '『', result)
+    result = re.sub(r'^連続ドラマW', '', result)
     result = re.sub(r'◆ドラマイズム】', '】', result)
     result = re.sub(r'<韓ドラ>', '', result)
     result = re.sub(r'【韓ドラ】', '', result)
