@@ -12,6 +12,20 @@ files = [
 ]
 
 [[package]]
+name = "ariblib"
+version = "0.1.4"
+description = "python implementation of arib-std-b10 and arib-std-b24"
+optional = false
+python-versions = "*"
+files = [
+    {file = "ariblib-0.1.4-py3-none-any.whl", hash = "sha256:ac3bb62ef2998811c23b00d6d9648dcde4c1df9d4e0c5a79385cb04b0bfb2310"},
+]
+
+[package.source]
+type = "url"
+url = "https://github.com/tsukumijima/ariblib/releases/download/v0.1.4/ariblib-0.1.4-py3-none-any.whl"
+
+[[package]]
 name = "attrs"
 version = "23.2.0"
 description = "Classes Without Boilerplate"
@@ -746,4 +760,4 @@ zstd = ["zstandard (>=0.18.0)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "f11709d40073aa6a8c18c4424c0fe76671c7685acb14c6bb745ce97186d1aaca"
+content-hash = "0534520bbaf8bd5f434078b0cce70f4caf9dd15fa0ccbe6d526e9d1f34f3acfc"

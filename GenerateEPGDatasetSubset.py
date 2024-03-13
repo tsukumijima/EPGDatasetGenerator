@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import ariblib.constants
 import jsonlines
 import typer
 import random
@@ -47,13 +48,15 @@ def meets_condition(data: EPGDatasetSubset) -> bool:
 
 def get_weight(data: EPGDatasetSubset) -> float:
     start_time = datetime.fromisoformat(data.start_time)
-    start_year = start_time.year
-    weight = (start_year - 2019) / 5 + 1  # 2019年を1.0、2024年を2.0とする
+    start_date = datetime(2019, 10, 1)  # 基準日を2019年10月1日に設定
+    months_diff = (start_time.year - start_date.year) * 12 + start_time.month - start_date.month
+    months_diff = max(months_diff, 0)  # months_diff が負の値になることを防ぐ
+    weight = months_diff / 60 + 1  # 2019年10月を 1.0 、2024年3月を 2.0 とするための計算
 
     if data.major_genre_id == 0x3 and data.middle_genre_id == 0x0:  # 国内ドラマ
-        weight *= 1.5  # 重みを1.5倍
+        weight *= 1.5  # 重みを 1.5 倍
     elif data.major_genre_id == 0x7 and data.middle_genre_id == 0x0:  # 国内アニメ
-        weight *= 1.5  # 重みを1.5倍
+        weight *= 1.5  # 重みを 1.5 倍
 
     return weight
 
@@ -112,13 +115,13 @@ def main(
     subsets.extend(random.sample(paid_bs_cs_data, initial_paid_bs_cs_count))
 
     # ジャンル別の件数を確認
-    genre_counts: defaultdict[tuple[int, int], int] = defaultdict(int)
+    middle_genre_counts: defaultdict[tuple[int, int], int] = defaultdict(int)
     for data in subsets:
-        genre_counts[(data.major_genre_id, data.middle_genre_id)] += 1
+        middle_genre_counts[(data.major_genre_id, data.middle_genre_id)] += 1
 
     total_count = len(subsets)
-    drama_count = genre_counts[(0x3, 0x0)]
-    anime_count = genre_counts[(0x7, 0x0)]
+    drama_count = middle_genre_counts[(0x3, 0x0)]
+    anime_count = middle_genre_counts[(0x7, 0x0)]
 
     print(f'国内ドラマ: {drama_count} 件 ({drama_count / total_count * 100:.2f}%)')
     print(f'国内アニメ: {anime_count} 件 ({anime_count / total_count * 100:.2f}%)')
@@ -146,6 +149,50 @@ def main(
 
     # ID 順にソート
     subsets.sort(key=lambda x: x.id)
+
+    # 最終的なサブセットデータセットの割合を月ごと、チャンネル種別ごと、ジャンルごとに確認
+    major_genre_counts = defaultdict(int)
+    middle_genre_counts = defaultdict(int)
+    channel_counts = defaultdict(int)
+    year_counts = defaultdict(int)
+    month_counts = defaultdict(int)
+    for data in subsets:
+        major_genre_counts[data.major_genre_id] += 1
+        middle_genre_counts[(data.major_genre_id, data.middle_genre_id)] += 1
+        if is_terrestrial(data.network_id):
+            channel_counts['terrestrial'] += 1
+        elif is_free_bs(data.network_id, data.service_id):
+            channel_counts['free_bs'] += 1
+        elif is_paid_bs_cs(data.network_id, data.service_id):
+            channel_counts['paid_bs_cs'] += 1
+        year_counts[datetime.fromisoformat(data.start_time).year] += 1
+        month_counts[datetime.fromisoformat(data.start_time).strftime('%Y-%m')] += 1
+
+    total_count = len(subsets)
+    print(f'サブセットの総件数: {total_count}')
+
+    # チャンネル種別ごとの割合を表示
+    print(f'地上波: {channel_counts["terrestrial"]} 件 ({channel_counts["terrestrial"] / total_count * 100:.2f}%)')
+    print(f'BS (無料放送): {channel_counts["free_bs"]} 件 ({channel_counts["free_bs"] / total_count * 100:.2f}%)')
+    print(f'BS (有料放送) & CS: {channel_counts["paid_bs_cs"]} 件 ({channel_counts["paid_bs_cs"] / total_count * 100:.2f}%)')
+
+    # 年ごとの割合を表示
+    print('年ごとの割合:')
+    for year, count in sorted(year_counts.items()):
+        print(f'{year}: {count} 件 ({count / total_count * 100:.2f}%)')
+
+    # 月ごとの割合を表示
+    print('月ごとの割合:')
+    for month, count in sorted(month_counts.items()):
+        print(f'{month}: {count} 件 ({count / total_count * 100:.2f}%)')
+
+    print('大分類ジャンルごとの割合:')
+    for major_genre, count in sorted(major_genre_counts.items()):
+        print(f'{ariblib.constants.CONTENT_TYPE[major_genre][0]}: {count} 件 ({count / total_count * 100:.2f}%)')
+
+    print('中分類ジャンルごとの割合:')
+    for genre, count in sorted(middle_genre_counts.items()):
+        print(f'{ariblib.constants.CONTENT_TYPE[genre[0]][0]}/{ariblib.constants.CONTENT_TYPE[genre[0]][1][genre[1]]}: {count} 件 ({count / total_count * 100:.2f}%)')
 
     print(f'{subset_path} に書き込んでいます...')
     with jsonlines.open(subset_path, 'w') as writer:
