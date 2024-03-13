@@ -65,19 +65,22 @@ def get_weight(data: EPGDatasetSubset) -> float:
     # 下記は実際の割合に基づいてサブセット化用の重みを調整している
     ## 定時ニュース: 基本録画されないので重みを減らす
     if data.major_genre_id == 0x0 and data.middle_genre_id == 0x0:
-        weight *= 0.4
-    ## 国内アニメ: 重要なジャンルなので重みを大きくする
-    elif data.major_genre_id == 0x7 and data.middle_genre_id == 0x0:
-        weight *= 1.8
+        weight *= 0.5
     ## 国内ドラマ: 重要なジャンルなので重みを大きくする
     elif data.major_genre_id == 0x3 and data.middle_genre_id == 0x0:
-        weight *= 1.8
+        weight *= 1.9
     ## 海外ドラマ: 多すぎるので減らす
     elif data.major_genre_id == 0x3 and data.middle_genre_id == 0x1:
-        weight *= 0.35
+        weight *= 0.3
     ## 映画: 数が少ない割に重要なジャンルなので重みを大きくする
     elif data.major_genre_id == 0x6:
-        weight *= 3.0
+        weight *= 2.2
+    ## 国内アニメ: 重要なジャンルなので重みを大きくする
+    elif data.major_genre_id == 0x7 and data.middle_genre_id == 0x0:
+        weight *= 1.7
+    ## 趣味・教育: 見る人が少ないので減らす
+    elif data.major_genre_id == 0xA:
+        weight *= 0.5
 
     return weight
 
@@ -185,37 +188,38 @@ def main(
 
     # チャンネル種別ごとの割合を表示
     print('-' * 80)
-    print(f'地上波: {channel_counts["terrestrial"]: >8} 件 ({channel_counts["terrestrial"] / total_count * 100:.2f}%)')
-    print(f'BS (無料放送): {channel_counts["free_bs"]: >8} 件 ({channel_counts["free_bs"] / total_count * 100:.2f}%)')
-    print(f'BS (有料放送) & CS: {channel_counts["paid_bs_cs"]: >8} 件 ({channel_counts["paid_bs_cs"] / total_count * 100:.2f}%)')
+    print(f'地上波: {channel_counts["terrestrial"]: >4} 件 ({channel_counts["terrestrial"] / total_count * 100:.2f}%)')
+    print(f'BS (無料放送): {channel_counts["free_bs"]: >4} 件 ({channel_counts["free_bs"] / total_count * 100:.2f}%)')
+    print(f'BS (有料放送) & CS: {channel_counts["paid_bs_cs"]: >4} 件 ({channel_counts["paid_bs_cs"] / total_count * 100:.2f}%)')
 
     # 年ごとの割合を表示
     print('-' * 80)
     print('年ごとの割合:')
     for year, count in sorted(year_counts.items()):
-        print(f'  {year}: {count: >8} 件 ({count / total_count * 100:.2f}%)')
+        print(f'  {year}: {count: >4} 件 ({count / total_count * 100:.2f}%)')
 
     # 月ごとの割合を表示
     print('-' * 80)
     print('月ごとの割合:')
     for month, count in sorted(month_counts.items()):
-        print(f'  {month}: {count: >8} 件 ({count / total_count * 100:.2f}%)')
+        print(f'  {month}: {count: >4} 件 ({count / total_count * 100:.2f}%)')
 
     print('-' * 80)
     print('大分類ジャンルごとの割合:')
     for major_genre, count in sorted(major_genre_counts.items()):
-        print(f'  {ariblib.constants.CONTENT_TYPE[major_genre][0]}: {count: >8} 件 ({count / total_count * 100:.2f}%)')
+        print(f'  {ariblib.constants.CONTENT_TYPE[major_genre][0]}: {count: >4} 件 ({count / total_count * 100:.2f}%)')
 
     print('-' * 80)
     print('中分類ジャンルごとの割合:')
     for genre, count in sorted(middle_genre_counts.items()):
-        print(f'  {ariblib.constants.CONTENT_TYPE[genre[0]][0]} - {ariblib.constants.CONTENT_TYPE[genre[0]][1][genre[1]]}: {count: >8} 件 ({count / total_count * 100:.2f}%)')
+        print(f'  {ariblib.constants.CONTENT_TYPE[genre[0]][0]} - {ariblib.constants.CONTENT_TYPE[genre[0]][1][genre[1]]}: {count: >4} 件 ({count / total_count * 100:.2f}%)')
 
     print('-' * 80)
     print(f'{subset_path} に書き込んでいます...')
     with jsonlines.open(subset_path, 'w') as writer:
         for subset in subsets:
             writer.write(subset.model_dump(mode='json', exclude={'weight'}))
+    print('-' * 80)
 
 if __name__ == '__main__':
     app()
