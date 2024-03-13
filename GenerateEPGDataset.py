@@ -4,6 +4,7 @@ import asyncio
 import jsonlines
 import typer
 from datetime import datetime, timedelta
+from pathlib import Path
 from pydantic import BaseModel
 from typing import Annotated
 
@@ -32,10 +33,16 @@ app = typer.Typer()
 
 @app.command()
 def main(
+    dataset_path: Annotated[Path, typer.Option(help='保存先の JSONL ファイルのパス。')] = Path('epg_dataset.jsonl'),
     edcb_host: Annotated[str, typer.Option(help='ネットワーク接続する EDCB のホスト名。')] = '127.0.0.1',
     start_date: Annotated[datetime, typer.Option(help='過去 EPG データの取得開始日時 (UTC+9) 。')] = datetime.now() - timedelta(days=1),
     end_date: Annotated[datetime, typer.Option(help='過去 EPG データの取得終了日時 (UTC+9 )。')] = datetime.now(),
 ):
+    # 既にファイルが存在している場合は終了
+    if dataset_path.exists():
+        print(f'ファイル {dataset_path} は既に存在しています。')
+        return
+
     # tzinfo が None ならば JST に変換
     ## この時入力値は常に UTC+9 なので、astimezone() ではなく replace を使う
     if start_date.tzinfo is None:
@@ -51,7 +58,7 @@ def main(
     edcb.setConnectTimeOutSec(60)  # かなり時間かかることも見据えて長めに設定
 
     # 古い日付から EPG データを随時 JSONL ファイルに保存
-    with jsonlines.open('epg_dataset.jsonl', mode='w') as writer:
+    with jsonlines.open(dataset_path, mode='w') as writer:
 
         # 1 週間ごとに EDCB から過去の EPG データを取得
         ## sendEnumPgArc は 1 回のリクエストで取得できるデータ量に制限があるため、1 週間ごとに取得する
