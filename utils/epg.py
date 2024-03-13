@@ -172,6 +172,7 @@ def RemoveSymbols(string: str) -> str:
     # 番組枠名などのノイズを削除する
     ## 正規表現でゴリ押し執念の削除を実行………
     result = re.sub(r'※2K放送', '', result)
+    result = re.sub(r'〔字幕スーパー〕', '', result)
     result = re.sub(r'【無料】', '', result)
     result = re.sub(r'【KNTV】', '', result)
     result = re.sub(r'【中】', '', result)
