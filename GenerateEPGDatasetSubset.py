@@ -38,11 +38,17 @@ def is_paid_bs_cs(network_id: int, service_id: int) -> bool:
 
 def meets_condition(data: EPGDatasetSubset) -> bool:
     # ref: https://github.com/youzaka/ariblib/blob/master/ariblib/constants.py
-    if data.major_genre_id == 0x2 and data.middle_genre_id == 0x4:  # ショッピング番組は除外
+    # ショッピング番組は除外
+    if data.major_genre_id == 0x2 and data.middle_genre_id == 0x4:
         return False
-    if data.major_genre_id >= 0xC:  # ジャンルIDが不明な番組は除外
+    # ジャンルIDが不明な番組は除外
+    if data.major_genre_id >= 0xC:
         return False
-    if not data.title:  # タイトルが空文字列の番組は除外
+    # ジャンル自体が EPG データに含まれていない場合は除外
+    if data.major_genre_id == -1 or data.middle_genre_id == -1:
+        return False
+    # タイトルが空文字列の番組は除外
+    if not data.title:
         return False
     return True
 
@@ -84,7 +90,7 @@ def main(
         for obj in reader:
             all_epg_count += 1
             data = EPGDatasetSubset.model_validate(obj)
-            if not meets_condition(data):
+            if meets_condition(data) is False:
                 continue
             title_desc_key = (data.title, data.description)
             if title_desc_key in unique_titles:
