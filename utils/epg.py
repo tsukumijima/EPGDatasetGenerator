@@ -1,9 +1,11 @@
 
 import re
+from typing import cast
 
 
 # 変換マップ
 __format_string_translation_map: dict[int, str] | None = None
+__format_string_regex: re.Pattern[str] | None = None
 __enclosed_characters_translation_map: dict[int, str] | None = None
 
 
@@ -19,7 +21,7 @@ def FormatString(string: str) -> str:
         str: 置換した文字列
     """
 
-    global __format_string_translation_map
+    global __format_string_translation_map, __format_string_regex
 
     # 全角英数を半角英数に置換
     # ref: https://github.com/ikegami-yukino/jaconv/blob/master/jaconv/conv_table.py
@@ -47,13 +49,42 @@ def FormatString(string: str) -> str:
         '〜': '～',
     })
 
-    # EPGDatasetGenerator では大元の文字列表現を保持したいので、EDCB で EpgDataCap3_Unicode.dll が使われていることが前提になっている
-    # このため、ここでは囲み文字への置換は行わない
-
     # 置換を実行
     if __format_string_translation_map is None:
         __format_string_translation_map = str.maketrans(merged_table)
     result = string.translate(__format_string_translation_map)
+
+    # 逆に代替の文字表現に置換された ARIB 外字を Unicode に置換するテーブル
+    ## 主に EDCB (EpgDataCap3_Unicode.dll 不使用) 環境向けの処理
+    ## EDCB は通常 Shift-JIS で表現できない文字をサロゲートペア範囲外の文字も含めてすべて代替の文字表現に変換するが、これはこれで見栄えが悪い
+    ## そこで、サロゲートペアなしで表現できて、一般的な日本語フォントでグリフが用意されていて、
+    ## かつ他の文字表現から明確に判別可能でそのままでは分かりづらい文字表現だけ Unicode に置換する
+    ## ref: https://github.com/xtne6f/EDCB/blob/work-plus-s-230526/EpgDataCap3/EpgDataCap3/ARIB8CharDecode.cpp#L1324-L1614
+    __format_string_regex_table = {
+        # '[・]': '⚿',  # グリフが用意されていないことが多い
+        '(秘)': '㊙',
+        'm^2': 'm²',
+        'm^3': 'm³',
+        'cm^2': 'cm²',
+        'cm^3': 'cm³',
+        'km^2': 'km²',
+        '[社]': '㈳',
+        '[財]': '㈶',
+        '[有]': '㈲',
+        '[株]': '㈱',
+        '[代]': '㈹',
+        # '(問)': '㉄',  # グリフが用意されていないことが多い
+        '^2': '²',
+        '^3': '³',
+        # '(箏): '㉇',  # グリフが用意されていないことが多い
+        '(〒)': '〶',
+        '()()': '⚾',
+    }
+
+    # 正規表現で置換
+    if __format_string_regex is None:
+        __format_string_regex = re.compile("|".join(map(re.escape, __format_string_regex_table.keys())))
+    result = __format_string_regex.sub(lambda match: cast(dict[str, str], __format_string_regex_table)[match.group(0)], result)  # type: ignore
 
     # 置換した文字列を返す
     return result
@@ -128,7 +159,7 @@ def RemoveSymbols(string: str) -> str:
     mark = ('新|終|再|交|映|手|声|多|副|字|文|CC|OP|二|S|B|SS|無|無料|'
         'C|S1|S2|S3|MV|双|デ|D|N|W|P|H|HV|SD|天|解|料|前|後初|生|販|吹|PPV|'
         '演|移|他|収|・|英|韓|中|字/日|字/日英|3D|2K|4K|8K|5.1|7.1|22.2|60P|120P|d|HC|HDR|SHV|UHD|VOD|配|初')
-    pattern1 = re.compile(r'\((二|字|再|吹|無料)\)', re.IGNORECASE)  # 通常の括弧で囲まれている記号
+    pattern1 = re.compile(r'\((二|字|字幕|再|再放送|吹|吹替|無料)\)', re.IGNORECASE)  # 通常の括弧で囲まれている記号
     pattern2 = re.compile(r'\[(' + mark + r')\]', re.IGNORECASE)
     pattern3 = re.compile(r'【(' + mark + r')】', re.IGNORECASE)
     result = pattern1.sub(' ', result)
