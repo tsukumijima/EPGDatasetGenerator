@@ -70,6 +70,7 @@ def main(
         print(f'ファイル {subset_path} は既に存在しています。')
         return
 
+    all_epg_count = 0  # 重複している番組も含めた全データセットの件数
     all_epg_data: list[EPGDatasetSubset] = []
     terrestrial_data: list[EPGDatasetSubset] = []
     free_bs_data: list[EPGDatasetSubset] = []
@@ -78,6 +79,7 @@ def main(
 
     with jsonlines.open(dataset_path, 'r') as reader:
         for obj in reader:
+            all_epg_count += 1
             data = EPGDatasetSubset.model_validate(obj)
             if not meets_condition(data):
                 continue
@@ -94,7 +96,7 @@ def main(
             elif is_paid_bs_cs(data.network_id, data.service_id):
                 paid_bs_cs_data.append(data)
 
-    print(f'データセットに含まれる番組数: {len(all_epg_data)}')
+    print(f'データセットに含まれる番組数: {all_epg_count}')
     print(f'重複を除いた番組数: {len(unique_titles)}')
 
     weighted_data = [(data, get_weight(data)) for data in all_epg_data]
