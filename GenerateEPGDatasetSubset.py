@@ -40,7 +40,7 @@ def main(
     dataset_path: Annotated[Path, typer.Option(help='データ元の JSONL データセットのパス。', exists=True, file_okay=True, dir_okay=False)] = Path('epg_dataset.jsonl'),
     subset_path: Annotated[Path, typer.Option(help='生成するデータセットのサブセットのパス。', dir_okay=False)] = Path('epg_dataset_subset.jsonl'),
     subset_size: Annotated[int, typer.Option(help='生成するデータセットのサブセットのサイズ')] = 5000,
-    chunk_size: Annotated[int, typer.Option(help='チャンクサイズ')] = 10000,
+    chunk_size: Annotated[int, typer.Option(help='チャンクサイズ')] = 1000000,
 ):
     """
     要件：
@@ -62,7 +62,7 @@ def main(
         print(f'ファイル {subset_path} は既に存在しています。')
         return
 
-    # チャンクサイズを指定してJSONLファイルを読み込む
+    print(f'データセット {dataset_path} を読み込んでいます...')
     reader = pd.read_json(dataset_path, lines=True, chunksize=chunk_size, dtype={
         'id': 'str',
         'network_id': 'int16',
@@ -78,55 +78,56 @@ def main(
         'major_genre_id': 'int8',
         'middle_genre_id': 'int8',
     })
+    print(f'データセット {dataset_path} を読み込みました。')
 
     terrestrial_chunks = []
     free_bs_chunks = []
     paid_bs_cs_chunks = []
 
-    for chunk in reader:
-        # 条件に合わない行を除外
-        chunk = chunk[chunk['major_genre_id'] < 0xC]  # 不明なジャンル ID の番組を除外
-        chunk = chunk[(chunk['major_genre_id'] != -1) & (chunk['middle_genre_id'] != -1)]  # ジャンル自体が EPG データに含まれていない番組を除外
-        chunk = chunk[chunk['title'].str.strip() != '']  # タイトルが空文字列の番組を除外
-        chunk = chunk.drop_duplicates(subset=['title', 'description'])  # 重複している番組を除外
+    for chunk_idx, chunk in enumerate(reader, start=1):
+        print(f'Processing chunk {chunk_idx}...')
 
-        # ネットワーク ID に基づいてチャンネル種別を識別
+        chunk = chunk[[
+            'id',
+            'network_id',
+            'service_id',
+            'transport_stream_id',
+            'event_id',
+            'start_time',
+            'duration',
+            'title',
+            'title_without_symbols',
+            'description',
+            'description_without_symbols',
+            'major_genre_id',
+            'middle_genre_id',
+        ]]
+        chunk = chunk.dropna(subset=['title'])
+        chunk.loc[chunk['major_genre_id'] == -1, ['major_genre_id', 'middle_genre_id']] = [None, None]
+        chunk = chunk.drop_duplicates(subset=['title', 'description'])
+
         chunk['channel_type'] = chunk.apply(lambda x: 'terrestrial' if is_terrestrial(x['network_id']) else (
             'free_bs' if is_free_bs(x['network_id'], x['service_id']) else (
                 'paid_bs_cs' if is_paid_bs_cs(x['network_id'], x['service_id']) else 'unknown'
             )
         ), axis=1)
 
-        # 重みを計算
         chunk['weight'] = chunk.apply(lambda x: get_weight(x), axis=1)
 
-        # "raw" カラムを除外
-        chunk = chunk.drop(columns='raw')
+        terrestrial_chunk = chunk[chunk['channel_type'] == 'terrestrial'].sample(frac=TERRESTRIAL_PERCENTAGE, weights='weight', replace=False)
+        free_bs_chunk = chunk[chunk['channel_type'] == 'free_bs'].sample(frac=FREE_BS_PERCENTAGE, weights='weight', replace=False)
+        paid_bs_cs_chunk = chunk[chunk['channel_type'] == 'paid_bs_cs'].sample(frac=PAID_BS_CS_PERCENTAGE, weights='weight', replace=False)
 
-        # チャンネル種別ごとにデータを分割
-        terrestrial_chunks.append(chunk[chunk['channel_type'] == 'terrestrial'])
-        free_bs_chunks.append(chunk[chunk['channel_type'] == 'free_bs'])
-        paid_bs_cs_chunks.append(chunk[chunk['channel_type'] == 'paid_bs_cs'])
+        terrestrial_chunks.append(terrestrial_chunk)
+        free_bs_chunks.append(free_bs_chunk)
+        paid_bs_cs_chunks.append(paid_bs_cs_chunk)
 
-        del chunk
+        del chunk, terrestrial_chunk, free_bs_chunk, paid_bs_cs_chunk
         gc.collect()
 
-    # チャンクをまとめてDataFrame化
-    terrestrial_df = pd.concat(terrestrial_chunks, ignore_index=True)
-    free_bs_df = pd.concat(free_bs_chunks, ignore_index=True)
-    paid_bs_cs_df = pd.concat(paid_bs_cs_chunks, ignore_index=True)
+    subsets_df = pd.concat(terrestrial_chunks + free_bs_chunks + paid_bs_cs_chunks, ignore_index=True)
+    subsets_df = subsets_df.sample(frac=1).reset_index(drop=True)
 
-    # サブセットサイズに基づいてサンプリング
-    subsets_df = pd.concat([
-        terrestrial_df.sample(n=int(subset_size * TERRESTRIAL_PERCENTAGE), weights='weight', replace=False),
-        free_bs_df.sample(n=int(subset_size * FREE_BS_PERCENTAGE), weights='weight', replace=False),
-        paid_bs_cs_df.sample(n=int(subset_size * PAID_BS_CS_PERCENTAGE), weights='weight', replace=False)
-    ])
-
-    # ID 順にソート
-    subsets_df = subsets_df.sort_values(by='id')
-
-    # 最終的なサブセットデータセットの割合を月ごと、チャンネル種別ごと、ジャンルごとに確認
     total_count = len(subsets_df)
     print(f'サブセットデータセットのサイズ: {total_count} 件')
     channel_counts = subsets_df['channel_type'].value_counts()
@@ -135,32 +136,28 @@ def main(
     major_genre_counts = subsets_df['major_genre_id'].value_counts()
     middle_genre_counts = subsets_df.groupby(['major_genre_id', 'middle_genre_id']).size()
 
-    # チャンネル種別ごとの割合を表示
     print('チャンネル種別ごとの割合:')
     for channel_type, count in channel_counts.items():
         print(f'{channel_type}: {count / total_count * 100:.2f}% ({count} 件)')
 
-    # 年ごとの割合を表示
     print('年ごとの割合:')
     for year, count in year_counts.items():
         print(f'{year}: {count / total_count * 100:.2f}% ({count} 件)')
 
-    # 月ごとの割合を表示
     print('月ごとの割合:')
     for month, count in month_counts.items():
         print(f'{month}: {count / total_count * 100:.2f}% ({count} 件)')
 
-    # 大分類ジャンルごとの割合を表示
     print('大分類ジャンルごとの割合:')
     for major_genre, count in major_genre_counts.items():
-        print(f'{ariblib.constants.CONTENT_TYPE[major_genre][0]}: {count / total_count * 100:.2f}% ({count} 件)')
+        if major_genre is not None:
+            print(f'{ariblib.constants.CONTENT_TYPE[major_genre][0]}: {count / total_count * 100:.2f}% ({count} 件)')
 
-    # 中分類ジャンルごとの割合を表示
     print('中分類ジャンルごとの割合:')
     for (major_genre, middle_genre), count in middle_genre_counts.items():
-        print(f'{ariblib.constants.CONTENT_TYPE[major_genre][0]}/{ariblib.constants.CONTENT_TYPE[major_genre][1][middle_genre]}: {count / total_count * 100:.2f}% ({count} 件)')
+        if major_genre is not None and middle_genre is not None:
+            print(f'{ariblib.constants.CONTENT_TYPE[major_genre][0]}/{ariblib.constants.CONTENT_TYPE[major_genre][1][middle_genre]}: {count / total_count * 100:.2f}% ({count} 件)')
 
-    # JSONL ファイルに書き込む
     print(f'{subset_path} に書き込んでいます...')
     subsets_df.to_json(subset_path, orient='records', lines=True)
 
