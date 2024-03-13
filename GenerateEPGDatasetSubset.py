@@ -103,9 +103,13 @@ def main(
     weighted_data.sort(key=lambda x: x[1], reverse=True)
 
     subsets: list[EPGDatasetSubset] = []
-    subsets.extend(random.sample(terrestrial_data, int(subset_size * 0.6)))
-    subsets.extend(random.sample(free_bs_data, int(subset_size * 0.3)))
-    subsets.extend(random.sample(paid_bs_cs_data, int(subset_size * 0.1)))
+    initial_terrestrial_count = min(len(terrestrial_data), int(subset_size * 0.6))
+    initial_free_bs_count = min(len(free_bs_data), int(subset_size * 0.3))
+    initial_paid_bs_cs_count = min(len(paid_bs_cs_data), int(subset_size * 0.1))
+
+    subsets.extend(random.sample(terrestrial_data, initial_terrestrial_count))
+    subsets.extend(random.sample(free_bs_data, initial_free_bs_count))
+    subsets.extend(random.sample(paid_bs_cs_data, initial_paid_bs_cs_count))
 
     # ジャンル別の件数を確認
     genre_counts: defaultdict[tuple[int, int], int] = defaultdict(int)
@@ -119,18 +123,29 @@ def main(
     print(f'国内ドラマ: {drama_count} 件 ({drama_count / total_count * 100:.2f}%)')
     print(f'国内アニメ: {anime_count} 件 ({anime_count / total_count * 100:.2f}%)')
 
-    if drama_count < subset_size * 0.15 or anime_count < subset_size * 0.15:
+    required_drama_count = int(subset_size * 0.15)
+    required_anime_count = int(subset_size * 0.15)
+
+    if drama_count < required_drama_count or anime_count < required_anime_count:
         print('国内ドラマまたは国内アニメの件数が少ないため、再サンプリングを行います...')
-        drama_data = [data for data in all_epg_data if data.major_genre_id == 0x3 and data.middle_genre_id == 0x0]
-        anime_data = [data for data in all_epg_data if data.major_genre_id == 0x7 and data.middle_genre_id == 0x0]
+        additional_drama_count = required_drama_count - drama_count
+        additional_anime_count = required_anime_count - anime_count
 
-        while drama_count < subset_size * 0.15:
-            subsets.append(random.choice(drama_data))
-            drama_count += 1
+        # 再サンプリング時にも割合を保持
+        additional_terrestrial_data = [data for data in terrestrial_data if data.major_genre_id == 0x3 and data.middle_genre_id == 0x0 or data.major_genre_id == 0x7 and data.middle_genre_id == 0x0]
+        additional_free_bs_data = [data for data in free_bs_data if data.major_genre_id == 0x3 and data.middle_genre_id == 0x0 or data.major_genre_id == 0x7 and data.middle_genre_id == 0x0]
+        additional_paid_bs_cs_data = [data for data in paid_bs_cs_data if data.major_genre_id == 0x3 and data.middle_genre_id == 0x0 or data.major_genre_id == 0x7 and data.middle_genre_id == 0x0]
 
-        while anime_count < subset_size * 0.15:
-            subsets.append(random.choice(anime_data))
-            anime_count += 1
+        subsets.extend(random.sample(additional_terrestrial_data, min(len(additional_terrestrial_data), int(additional_drama_count * 0.6 + additional_anime_count * 0.6))))
+        subsets.extend(random.sample(additional_free_bs_data, min(len(additional_free_bs_data), int(additional_drama_count * 0.3 + additional_anime_count * 0.3))))
+        subsets.extend(random.sample(additional_paid_bs_cs_data, min(len(additional_paid_bs_cs_data), int(additional_drama_count * 0.1 + additional_anime_count * 0.1))))
+
+        # 総数が subset_size を超えないように調整
+        if len(subsets) > subset_size:
+            subsets = random.sample(subsets, subset_size)
+
+    # ID 順にソート
+    subsets.sort(key=lambda x: x.id)
 
     print(f'{subset_path} に書き込んでいます...')
     with jsonlines.open(subset_path, 'w') as writer:
