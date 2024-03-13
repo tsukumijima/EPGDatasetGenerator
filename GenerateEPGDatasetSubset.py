@@ -53,7 +53,7 @@ app = typer.Typer()
 def main(
     dataset_path: Annotated[Path, typer.Option(help='データ元の JSONL データセットのパス。', exists=True, file_okay=True, dir_okay=False)] = Path('epg_dataset.jsonl'),
     subset_path: Annotated[Path, typer.Option(help='生成するデータセットのサブセットのパス。', dir_okay=False)] = Path('epg_dataset_subset.jsonl'),
-    subset_size: Annotated[int, typer.Option(help='生成するデータセットのサブセットのサイズ')] = 3000,
+    subset_size: Annotated[int, typer.Option(help='生成するデータセットのサブセットのサイズ')] = 5000,
 ):
     # 既にファイルが存在している場合は終了
     if subset_path.exists():
