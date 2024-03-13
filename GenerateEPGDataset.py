@@ -23,6 +23,8 @@ class EPGDataset(BaseModel):
     title_without_symbols: str
     description: str
     description_without_symbols: str
+    major_genre_id: int
+    middle_genre_id: int
     raw: EventInfo
 
 
@@ -99,6 +101,14 @@ def main(
                     title = FormatString(event_info['short_info']['event_name'])
                     description = FormatString(event_info['short_info']['text_char'])
 
+                    # ジャンルの ID を取得
+                    ## 複数のジャンルが存在する場合、最初のジャンルのみを取得
+                    major_genre_id = -1
+                    middle_genre_id = -1
+                    if 'content_info' in event_info and len(event_info['content_info']['nibble_list']) >= 1:
+                        major_genre_id = event_info['content_info']['nibble_list'][0]['content_nibble'] >> 8
+                        middle_genre_id = event_info['content_info']['nibble_list'][0]['content_nibble'] & 0xf
+
                     dataset_list.append(EPGDataset(
                         id = epg_id,
                         network_id = event_info['onid'],
@@ -111,6 +121,8 @@ def main(
                         description_without_symbols = RemoveSymbols(description),
                         start_time = event_info['start_time'],
                         duration = event_info['duration_sec'],
+                        major_genre_id = major_genre_id,
+                        middle_genre_id = middle_genre_id,
                         raw = event_info,
                     ))
 
