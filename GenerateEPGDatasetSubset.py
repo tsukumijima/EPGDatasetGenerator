@@ -21,10 +21,15 @@ class EPGDatasetSubset(BaseModel):
     duration: int
     title: str
     title_without_symbols: str
+    series_title: str = ''  # 後で自動 or 人力で追加するフィールド
+    episode_number: str | None = None  # 後で自動 or 人力で追加するフィールド
+    subtitle: str | None = None  # 後で自動 or 人力で追加するフィールド
     description: str
     description_without_symbols: str
     major_genre_id: int
     middle_genre_id: int
+
+class EPGDatasetSubsetInternal(EPGDatasetSubset):
     weight: float = 1.0  # 内部でのみ使用
 
 
@@ -119,16 +124,16 @@ def main(
         return
 
     all_epg_count = 0  # 重複している番組も含めた全データセットの件数
-    all_epg_data: list[EPGDatasetSubset] = []
-    terrestrial_data: list[EPGDatasetSubset] = []
-    free_bs_data: list[EPGDatasetSubset] = []
-    paid_bs_cs_data: list[EPGDatasetSubset] = []
+    all_epg_data: list[EPGDatasetSubsetInternal] = []
+    terrestrial_data: list[EPGDatasetSubsetInternal] = []
+    free_bs_data: list[EPGDatasetSubsetInternal] = []
+    paid_bs_cs_data: list[EPGDatasetSubsetInternal] = []
     unique_titles = set()
 
     with jsonlines.open(dataset_path, 'r') as reader:
         for obj in reader:
             all_epg_count += 1
-            data = EPGDatasetSubset.model_validate(obj)
+            data = EPGDatasetSubsetInternal.model_validate(obj)
             if meets_condition(data) is False:
                 continue
             title_desc_key = (data.title, data.description)
@@ -149,7 +154,7 @@ def main(
     print(f'データセットに含まれる番組数: {all_epg_count}')
     print(f'重複を除いた番組数: {len(unique_titles)}')
 
-    def sample_data(data_list: list[EPGDatasetSubset], target_size: int) -> list[EPGDatasetSubset]:
+    def sample_data(data_list: list[EPGDatasetSubsetInternal], target_size: int) -> list[EPGDatasetSubsetInternal]:
         if len(data_list) == 0:
             return []
         total_weight = sum(data.weight for data in data_list)
@@ -159,7 +164,7 @@ def main(
     subset_size_free_bs = int(subset_size * FREE_BS_PERCENTAGE)
     subset_size_paid_bs_cs = int(subset_size * PAID_BS_CS_PERCENTAGE)
 
-    subsets: list[EPGDatasetSubset] = []
+    subsets: list[EPGDatasetSubsetInternal] = []
     subsets += sample_data(terrestrial_data, subset_size_terrestrial)
     subsets += sample_data(free_bs_data, subset_size_free_bs)
     subsets += sample_data(paid_bs_cs_data, subset_size_paid_bs_cs)
@@ -221,7 +226,7 @@ def main(
     print(f'{subset_path} に書き込んでいます...')
     with jsonlines.open(subset_path, 'w') as writer:
         for subset in subsets:
-            writer.write(subset.model_dump(mode='json', exclude={'weight'}))
+            writer.write(subset.model_dump(mode='json', exclude={'weight'}))  # weight は出力しない
     print('-' * 80)
 
 if __name__ == '__main__':
