@@ -1,8 +1,11 @@
 #!/usr/bin/env python
 
+import google.generativeai as genai
+import os
 import jsonlines
 import time
 import typer
+from dotenv import load_dotenv
 from pathlib import Path
 from typing import Annotated
 
@@ -10,7 +13,15 @@ from .GenerateEPGDatasetSubset import EPGDatasetSubset
 
 
 def generate_annotations(subset: EPGDatasetSubset) -> EPGDatasetSubset:
-    """ Gemini 1.5 Pro によるアノテーション自動生成 """
+    """ Gemini 1.0 Pro によるアノテーション自動生成 """
+
+    # API キーの設定
+    load_dotenv()
+    GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
+    genai.configure(api_key=GEMINI_API_KEY)
+
+    gemini_pro = genai.GenerativeModel('models/gemini-1.0-pro-latest')
+
 
     return subset
 
