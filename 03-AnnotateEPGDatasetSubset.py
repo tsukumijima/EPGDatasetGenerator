@@ -74,6 +74,8 @@ def main(
                 typer.echo('-' * 80)
                 print(f'シリーズタイトル: {subset.series_title}')
                 print(f'話数: {subset.episode_number} / サブタイトル: {subset.subtitle}')
+                typer.echo('-' * 80)
+                print(f'残りデータ数: {len(subsets) - current_index - 1}')
                 typer.echo('=' * 80)
 
                 # 次の処理対象のファイルのインデックスに進める
