@@ -36,7 +36,7 @@ def main(
     dataset_path: Annotated[Path, typer.Option(help='保存先の JSONL ファイルのパス。')] = Path('epg_dataset.jsonl'),
     edcb_host: Annotated[str, typer.Option(help='ネットワーク接続する EDCB のホスト名。')] = '127.0.0.1',
     start_date: Annotated[datetime, typer.Option(help='過去 EPG データの取得開始日時 (UTC+9) 。')] = datetime.now() - timedelta(days=1),
-    end_date: Annotated[datetime, typer.Option(help='過去 EPG データの取得終了日時 (UTC+9 )。')] = datetime.now(),
+    end_date: Annotated[datetime, typer.Option(help='過去 EPG データの取得終了日時 (UTC+9)。')] = datetime.now(),
 ):
     # 既にファイルが存在している場合は終了
     if dataset_path.exists():
@@ -86,8 +86,8 @@ def main(
                 EDCBUtil.datetimeToFileTime(end, tz=CtrlCmdUtil.TZ),
             ]))
             if service_event_info_list is None:
-                print('過去 EPG データの取得に失敗しました。')
-                return
+                print('Warning: 過去 EPG データの取得に失敗しました。')
+                service_event_info_list = []
 
             # EPG データを整形
             dataset_list: list[EPGDataset] = []
