@@ -71,12 +71,12 @@ def main(
 
                 print(f'番組タイトル: {subset.title_without_symbols}')
                 print(f'番組概要: {subset.description_without_symbols}')
+                typer.echo('-' * 80)
                 print(f'シリーズタイトル: {subset.series_title}')
-                print(f'話数: {subset.episode_number}')
-                print(f'サブタイトル: {subset.subtitle}')
+                print(f'話数: {subset.episode_number} / サブタイトル: {subset.subtitle}')
+                typer.echo('=' * 80)
 
                 # 次の処理対象のファイルのインデックスに進める
-                typer.echo('-' * 80)
                 current_index += 1
 
             # 次の処理対象のファイルがない場合は終了
