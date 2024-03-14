@@ -69,9 +69,10 @@ def main(
                 end = end_date
 
             print(f'取得期間: {start} ~ {end}')
+            service_event_info_list: list[ServiceEventInfo] = []
 
             # EDCB から指定期間の EPG データを取得
-            service_event_info_list: list[ServiceEventInfo] | None = asyncio.run(edcb.sendEnumPgArc([
+            result: list[ServiceEventInfo] | None = asyncio.run(edcb.sendEnumPgArc([
                 # 絞り込み対象のネットワーク ID・トランスポートストリーム ID・サービス ID に掛けるビットマスク (?????)
                 ## よく分かってないけどとりあえずこれで全番組が対象になる
                 0xffffffffffff,
@@ -85,9 +86,32 @@ def main(
                 # たとえば 11:00:00 ならば 10:59:59 までの番組が対象になるし、11:00:01 ならば 11:00:00 までの番組が対象になる
                 EDCBUtil.datetimeToFileTime(end, tz=CtrlCmdUtil.TZ),
             ]))
-            if service_event_info_list is None:
+            if result is None:
                 print('Warning: 過去 EPG データの取得に失敗しました。')
-                service_event_info_list = []
+            else:
+                service_event_info_list.extend(result)
+
+            # もし取得終了日時が現在時刻よりも未来の場合、別の API を使って現在時刻以降の EPG データを取得
+            if end_date > datetime.now(tz=CtrlCmdUtil.TZ):
+                print('取得終了日時が現在時刻よりも未来なので、現在時刻以降の EPG データも取得します。')
+                result: list[ServiceEventInfo] | None = asyncio.run(edcb.sendEnumPgInfoEx([
+                    # 絞り込み対象のネットワーク ID・トランスポートストリーム ID・サービス ID に掛けるビットマスク (?????)
+                    ## よく分かってないけどとりあえずこれで全番組が対象になる
+                    0xffffffffffff,
+                    # 絞り込み対象のネットワーク ID・トランスポートストリーム ID・サービス ID
+                    ## (network_id << 32 | transport_stream_id << 16 | service_id) の形式で指定しなければならないらしい
+                    ## よく分かってないけどとりあえずこれで全番組が対象になる
+                    0xffffffffffff,
+                    # 絞り込み対象の番組開始時刻の最小値
+                    EDCBUtil.datetimeToFileTime(start, tz=CtrlCmdUtil.TZ),
+                    # 絞り込み対象の番組開始時刻の最大値 (自分自身を含まず、番組「開始」時刻が指定した時刻より前の番組が対象になる)
+                    # たとえば 11:00:00 ならば 10:59:59 までの番組が対象になるし、11:00:01 ならば 11:00:00 までの番組が対象になる
+                    EDCBUtil.datetimeToFileTime(end, tz=CtrlCmdUtil.TZ),
+                ]))
+                if result is None:
+                    print('Warning: 将来 EPG データの取得に失敗しました。')
+                else:
+                    service_event_info_list.extend(result)
 
             # EPG データを整形
             dataset_list: list[EPGDataset] = []
