@@ -32,7 +32,7 @@ def main(
     print(f'ロード完了: {len(subsets)} 件')
     typer.echo('=' * 80)
 
-    with jsonlines.open(annotated_subset_path, 'w') as writer:
+    with jsonlines.open(annotated_subset_path, 'w', flush=True) as writer:
 
         # 現在処理中の EPG データサブセットのインデックス
         current_index = 0
