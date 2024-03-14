@@ -334,6 +334,7 @@ def RemoveSymbols(string: str) -> str:
     result = re.sub(r'FRIDAY ANIME NIGHT', '', result)
     result = re.sub(r'^(月|火|水|木|金|土|日)曜アニメ・水もん ', '', result)
     result = re.sub(r'【(アニメ|アニメシャワー|アニメ特区|アニメイズム|スーパーアニメイズム|ヌマニメーション|ANiMAZiNG！！！|ANiMAZiNG2！！！)】', '', result)
+    result = re.sub(r'^・', '', result)
 
     # 前後の半角スペースを削除する
     result = result.strip()
