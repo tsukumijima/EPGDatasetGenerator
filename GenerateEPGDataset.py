@@ -179,7 +179,7 @@ def main(
                 writer.write(dataset.model_dump(mode='json'))
 
             # 次のループのために開始日時を更新
-            current_start_date = current_end_date + timedelta(seconds=1)
+            current_start_date = current_end_date
 
     elapsed_time = time.time() - start_time
     print(f'処理時間: {elapsed_time:.2f} 秒')
