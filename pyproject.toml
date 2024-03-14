@@ -9,6 +9,7 @@ classifiers = ["Private :: Do Not Upload"]
 [tool.poetry.dependencies]
 python = "^3.11"
 ariblib = {url = "https://github.com/tsukumijima/ariblib/releases/download/v0.1.4/ariblib-0.1.4-py3-none-any.whl"}
+gradio = "^4.21.0"
 pydantic = "^2.6.4"
 jsonlines = "^4.0.0"
 rich = "^13.7.1"
