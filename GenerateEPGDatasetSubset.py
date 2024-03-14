@@ -65,22 +65,25 @@ def get_weight(data: EPGDatasetSubset) -> float:
     # 下記は実際の割合に基づいてサブセット化用の重みを調整している
     ## 定時ニュース: 基本録画されないので重みを減らす
     if data.major_genre_id == 0x0 and data.middle_genre_id == 0x0:
-        weight *= 0.5
+        weight *= 0.45
     ## 国内ドラマ: 重要なジャンルなので重みを大きくする
     elif data.major_genre_id == 0x3 and data.middle_genre_id == 0x0:
-        weight *= 1.9
+        weight *= 1.8
     ## 海外ドラマ: 多すぎるので減らす
     elif data.major_genre_id == 0x3 and data.middle_genre_id == 0x1:
-        weight *= 0.3
+        weight *= 0.25
     ## 映画: 数が少ない割に重要なジャンルなので重みを大きくする
     elif data.major_genre_id == 0x6:
         weight *= 2.2
+        # 特にアニメ映画は少ない割に重要なので重みをさらに大きくする
+        if data.middle_genre_id == 0x2:
+            weight *= 1.3
     ## 国内アニメ: 重要なジャンルなので重みを大きくする
     elif data.major_genre_id == 0x7 and data.middle_genre_id == 0x0:
         weight *= 1.7
     ## 趣味・教育: 見る人が少ないので減らす
     elif data.major_genre_id == 0xA:
-        weight *= 0.5
+        weight *= 0.6
 
     return weight
 
