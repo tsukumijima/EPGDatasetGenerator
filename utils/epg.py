@@ -209,6 +209,7 @@ def RemoveSymbols(string: str) -> str:
     ## 正規表現でゴリ押し執念の削除を実行………
     ## かなり悩ましかったが、「(字幕版)」はあくまでそういう版であることを示す情報なので削除しないことにした (「【日本語字幕版】」も同様)
     result = re.sub(r'※2K放送', '', result)
+    result = re.sub(r'※字幕スーパー', '', result)
     result = re.sub(r'<字幕>', '', result)
     result = re.sub(r'<字幕スーパー>', '', result)
     result = re.sub(r'<字幕・レターボックスサイズ>', '', result)
