@@ -140,8 +140,8 @@ def main(
             title_desc_key = (data.title, data.description)
             if title_desc_key in unique_titles:
                 continue
-            print(f'Processing: {data.id}')
             unique_titles.add(title_desc_key)
+            print(f'Processing: {data.id}')
             data.weight = get_weight(data)
             all_epg_data.append(data)
             if is_terrestrial(data.network_id):

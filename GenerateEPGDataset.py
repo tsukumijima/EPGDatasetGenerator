@@ -57,6 +57,9 @@ def main(
     edcb.setNWSetting(edcb_host, 4510)
     edcb.setConnectTimeOutSec(60)  # かなり時間かかることも見据えて長めに設定
 
+    # 重複する番組を除外するためのセット
+    unique_set = set()
+
     # 古い日付から EPG データを随時 JSONL ファイルに保存
     with jsonlines.open(dataset_path, mode='w') as writer:
 
@@ -127,6 +130,13 @@ def main(
                     # ID: 202301011230-NID32736-SID01024-EID00535 のフォーマット
                     # 最初に番組開始時刻を付けて完全な一意性を担保する
                     epg_id = f"{event_info['start_time'].strftime('%Y%m%d%H%M')}-NID{event_info['onid']:05d}-SID{event_info['sid']:05d}-EID{event_info['eid']:05d}"
+
+                    # 万が一 ID が重複する番組があれば除外
+                    ## EDCB の仕様に不備がなければ基本的にないはず
+                    if epg_id in unique_set:
+                        print(f'Skip: {epg_id}')
+                        continue
+                    unique_set.add(epg_id)
 
                     # 番組タイトルと番組概要を半角に変換
                     title = FormatString(event_info['short_info']['event_name'])
