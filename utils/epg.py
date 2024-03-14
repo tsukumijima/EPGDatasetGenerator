@@ -122,6 +122,9 @@ def FormatString(string: str) -> str:
         __format_string_regex = re.compile("|".join(map(re.escape, __format_string_regex_table.keys())))
     result = __format_string_regex.sub(lambda match: cast(dict[str, str], __format_string_regex_table)[match.group(0)], result)  # type: ignore
 
+    # CRLF を LF に置換
+    result = result.replace('\r\n', '\n')
+
     # 置換した文字列を返す
     return result
 
@@ -167,6 +170,7 @@ def RemoveSymbols(string: str) -> str:
         '\U0001f21b': '[料]',
         '\U0001f21c': '[前]',
         '\U0001f21d': '[後]',
+        '⚿': '[・]',
         '\U0001f21e': '[再]',
         '\U0001f21f': '[新]',
         '\U0001f220': '[初]',
@@ -176,7 +180,6 @@ def RemoveSymbols(string: str) -> str:
         '\U0001f224': '[声]',
         '\U0001f225': '[吹]',
         '\U0001f14e': '[PPV]',
-        '\U0001f200': '[ほか]',
     }
 
     # Unicode の囲み文字を大かっこで囲った文字に置換する
@@ -329,7 +332,7 @@ def RemoveSymbols(string: str) -> str:
     result = result.strip()
 
     # 連続する半角スペースを 1 つにする
-    result = re.sub(r'\s+', ' ', result)
+    result = re.sub(r'[ \t]+', ' ', result)
 
     # 置換した文字列を返す
     return result
