@@ -6,28 +6,11 @@ import time
 import typer
 from datetime import datetime, timedelta
 from pathlib import Path
-from pydantic import BaseModel
 from typing import Annotated
 
-from utils.edcb import CtrlCmdUtil, EDCBUtil, EventInfo, ServiceEventInfo
+from utils.constants import EPGDataset
+from utils.edcb import CtrlCmdUtil, EDCBUtil, ServiceEventInfo
 from utils.epg import FormatString, RemoveSymbols
-
-
-class EPGDataset(BaseModel):
-    id: str
-    network_id: int
-    service_id: int
-    transport_stream_id: int
-    event_id: int
-    start_time: datetime
-    duration: int
-    title: str
-    title_without_symbols: str
-    description: str
-    description_without_symbols: str
-    major_genre_id: int
-    middle_genre_id: int
-    raw: EventInfo
 
 
 app = typer.Typer()

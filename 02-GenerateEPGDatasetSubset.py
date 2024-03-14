@@ -8,31 +8,9 @@ import typer
 from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
-from pydantic import BaseModel
 from typing import Annotated
 
-
-class EPGDatasetSubset(BaseModel):
-    id: str
-    network_id: int
-    service_id: int
-    transport_stream_id: int
-    event_id: int
-    start_time: str
-    duration: int
-    title: str
-    title_without_symbols: str
-    description: str
-    description_without_symbols: str
-    major_genre_id: int
-    middle_genre_id: int
-    # ここから下は後で自動 or 人力で追加するフィールド
-    series_title: str = ''
-    episode_number: str | None = None
-    subtitle: str | None = None
-
-class EPGDatasetSubsetInternal(EPGDatasetSubset):
-    weight: float = 1.0  # 内部でのみ使用
+from utils.constants import EPGDatasetSubset, EPGDatasetSubsetInternal
 
 
 def is_terrestrial(network_id: int) -> bool:
