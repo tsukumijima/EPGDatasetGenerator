@@ -69,8 +69,8 @@ def main(
                     subset.subtitle = None
                 writer.write(subset.model_dump(mode='json'))
 
-                print(f'番組タイトル: {subset.title}')
-                print(f'番組概要: {subset.description}')
+                print(f'番組タイトル: {subset.title_without_symbols}')
+                print(f'番組概要: {subset.description_without_symbols}')
                 print(f'シリーズタイトル: {subset.series_title}')
                 print(f'話数: {subset.episode_number}')
                 print(f'サブタイトル: {subset.subtitle}')
@@ -96,11 +96,11 @@ def main(
             # UI を更新
             return (
                 gradio.Textbox(value=subsets[current_index].id, label='ID (読み取り専用)', interactive=False),
-                gradio.Textbox(value=subsets[current_index].title, label='番組タイトル (読み取り専用)', interactive=False),
-                gradio.Textbox(value=subsets[current_index].description, label='番組概要 (読み取り専用)', interactive=False),
-                gradio.Textbox(value=subsets[current_index].title, label='シリーズタイトル', interactive=True),
-                gradio.Textbox(value=subsets[current_index].title, label='話数 (該当情報がない場合は空欄)', interactive=True),
-                gradio.Textbox(value=subsets[current_index].title, label='サブタイトル (該当情報がない場合は空欄)', interactive=True),
+                gradio.Textbox(value=subsets[current_index].title_without_symbols, label='番組タイトル (読み取り専用)', interactive=False),
+                gradio.Textbox(value=subsets[current_index].description_without_symbols, label='番組概要 (読み取り専用)', interactive=False),
+                gradio.Textbox(value=subsets[current_index].title_without_symbols, label='シリーズタイトル', interactive=True),
+                gradio.Textbox(value=subsets[current_index].title_without_symbols, label='話数 (該当情報がない場合は空欄)', interactive=True),
+                gradio.Textbox(value=subsets[current_index].title_without_symbols, label='サブタイトル (該当情報がない場合は空欄)', interactive=True),
             )
 
         # Gradio UI の定義と起動
