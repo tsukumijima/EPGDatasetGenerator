@@ -207,14 +207,20 @@ def RemoveSymbols(string: str) -> str:
 
     # 番組枠名などのノイズを削除する
     ## 正規表現でゴリ押し執念の削除を実行………
+    ## かなり悩ましかったが、「(字幕版)」はあくまでそういう版であることを示す情報なので削除しないことにした (「【日本語字幕版】」も同様)
     result = re.sub(r'※2K放送', '', result)
+    result = re.sub(r'<字幕>', '', result)
+    result = re.sub(r'<字幕スーパー>', '', result)
+    result = re.sub(r'<字幕・レターボックスサイズ>', '', result)
+    result = re.sub(r'<レターボックスサイズ>', '', result)
+    result = re.sub(r'〔字幕〕', '', result)
     result = re.sub(r'〔字幕スーパー〕', '', result)
+    result = re.sub(r'【字幕】', '', result)
+    result = re.sub(r'【字幕スーパー】', '', result)
     result = re.sub(r'【無料】', '', result)
     result = re.sub(r'【KNTV】', '', result)
     result = re.sub(r'【中】', '', result)
     result = re.sub(r'【韓】', '', result)
-    result = re.sub(r'【字幕】', '', result)
-    result = re.sub(r'【字幕スーパー】', '', result)
     result = re.sub(r'【リクエスト】', '', result)
     result = re.sub(r'【解説放送】', '', result)
     result = re.sub(r'<独占>', '', result)
