@@ -20,7 +20,12 @@ def generate_annotations(subset: EPGDatasetSubset) -> EPGDatasetSubset:
     GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
     genai.configure(api_key=GEMINI_API_KEY)
 
-    gemini_pro = genai.GenerativeModel('models/gemini-1.0-pro-latest')
+    gemini_pro = genai.GenerativeModel(
+        model_name = 'models/gemini-1.0-pro-latest',
+        generation_config = genai.types.GenerationConfig(
+            temperature = 0.0,  # 決定論的な出力を得るために 0.0 に設定
+        ),
+    )
 
 
     return subset
