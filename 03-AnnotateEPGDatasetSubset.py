@@ -16,6 +16,17 @@ def main(
     subset_path: Annotated[Path, typer.Option(help='データセットのサブセットのパス。', dir_okay=False)] = Path('epg_dataset_subset.jsonl'),
     annotated_subset_path: Annotated[Path, typer.Option(help='アノテーション追加後のデータセットのサブセットのパス。')] = Path('epg_dataset_subset_annotated.jsonl'),
 ):
+    """
+    アノテーション方針:
+    - シリーズタイトル: 連続して放送されている番組のシリーズタイトルを入力
+    - 話数: 話数が番組情報に含まれている場合のみ入力、複数話ある場合は ／ (全角スラッシュ) で区切る
+      - 表現は極力変更してはならない (「第1話」とあるなら 1 に正規化せずにそのまま入力すること)
+      - 番組概要に含まれている話数の方が詳細な場合は、番組概要の方の話数表現を採用する
+    - サブタイトル: サブタイトルが番組情報に含まれている場合のみ入力、複数話ある場合は ／ (全角スラッシュ) で区切る
+      - 基本鉤括弧は除去すべきだが、墨付きカッコで囲まれている場合のみそのまま入力すること
+      - サブタイトルが番組概要に含まれている場合は、番組概要の方のサブタイトル表現を採用する
+    """
+
     if not subset_path.exists():
         print(f'ファイル {subset_path} は存在しません。')
         return
