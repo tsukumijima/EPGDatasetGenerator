@@ -180,10 +180,7 @@ def RemoveSymbols(string: str) -> str:
     }
 
     # Unicode の囲み文字を大かっこで囲った文字に置換する
-    ## EDCB で EpgDataCap3_Unicode.dll を利用している場合や、Mirakurun 3.9.0-beta.24 以降など、
-    ## 番組情報取得元から Unicode の囲み文字が送られてくる場合に対応するためのもの
-    ## Unicode の囲み文字はサロゲートペアなどで扱いが難しい上に KonomiTV では囲み文字を CSS でハイライトしているため、Unicode にするメリットがない
-    ## ref: https://note.nkmk.me/python-str-replace-translate-re-sub/
+    # この後の処理で大かっこで囲まれた文字を削除するためのもの
     if __enclosed_characters_translation_map is None:
         __enclosed_characters_translation_map = str.maketrans(enclosed_characters_table)
     result = string.translate(__enclosed_characters_translation_map)
