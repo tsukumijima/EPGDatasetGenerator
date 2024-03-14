@@ -3,6 +3,7 @@
 import ariblib.constants
 import jsonlines
 import random
+import time
 import typer
 from collections import defaultdict
 from datetime import datetime
@@ -124,6 +125,8 @@ def main(
         print(f'ファイル {subset_path} は既に存在しています。')
         return
 
+    start_time = time.time()
+
     all_epg_count = 0  # 重複している番組も含めた全データセットの件数
     all_epg_data: list[EPGDatasetSubsetInternal] = []
     terrestrial_data: list[EPGDatasetSubsetInternal] = []
@@ -228,6 +231,9 @@ def main(
     with jsonlines.open(subset_path, 'w') as writer:
         for subset in subsets:
             writer.write(subset.model_dump(mode='json', exclude={'weight'}))  # weight は出力しない
+
+    elapsed_time = time.time() - start_time
+    print(f'処理時間: {elapsed_time:.2f} 秒')
     print('-' * 80)
 
 if __name__ == '__main__':

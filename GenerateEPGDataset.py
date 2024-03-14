@@ -2,6 +2,7 @@
 
 import asyncio
 import jsonlines
+import time
 import typer
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -42,6 +43,8 @@ def main(
     if dataset_path.exists():
         print(f'ファイル {dataset_path} は既に存在しています。')
         return
+
+    start_time = time.time()
 
     # tzinfo が None ならば JST に変換
     ## この時入力値は常に UTC+9 なので、astimezone() ではなく replace を使う
@@ -177,6 +180,9 @@ def main(
 
             # 次のループのために開始日時を更新
             current_start_date = current_end_date + timedelta(seconds=1)
+
+    elapsed_time = time.time() - start_time
+    print(f'処理時間: {elapsed_time:.2f} 秒')
 
 
 if __name__ == '__main__':
