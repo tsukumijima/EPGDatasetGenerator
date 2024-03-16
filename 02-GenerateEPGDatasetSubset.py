@@ -143,10 +143,18 @@ def main(
     print(f'重複を除いた番組数: {len(unique_keys)}')
 
     def sample_data(data_list: list[EPGDatasetSubsetInternal], target_size: int) -> list[EPGDatasetSubsetInternal]:
-        if len(data_list) == 0:
-            return []
-        total_weight = sum(data.weight for data in data_list)
-        return random.choices(data_list, weights=[data.weight / total_weight for data in data_list], k=target_size)
+        data_list_copy = data_list[:]  # リストの浅いコピーを作成
+        sampled_data = []
+        for _ in range(target_size):
+            if not data_list_copy:  # データリストが空になった場合、ループを抜ける
+                break
+            total_weight = sum(data.weight for data in data_list_copy)
+            if total_weight == 0:  # すべての要素の重みが0になった場合、ループを抜ける
+                break
+            chosen_data = random.choices(data_list_copy, weights=[data.weight / total_weight for data in data_list_copy], k=1)[0]
+            sampled_data.append(chosen_data)
+            data_list_copy.remove(chosen_data)  # 選択された要素をリストから削除
+        return sampled_data
 
     subset_size_terrestrial = int(subset_size * TERRESTRIAL_PERCENTAGE)
     subset_size_free_bs = int(subset_size * FREE_BS_PERCENTAGE)
@@ -159,6 +167,14 @@ def main(
 
     # ID でソート
     subsets.sort(key=lambda x: x.id)
+
+    # 万が一 ID が重複している場合は警告を出して当該番組を除外
+    unique_ids = set()
+    for subset in subsets:
+        if subset.id in unique_ids:
+            print(f'Warning: ID が重複しています: {subset.id}')
+            subsets.remove(subset)
+        unique_ids.add(subset.id)
 
     # 最終的なサブセットデータセットの割合を月ごと、チャンネル種別ごと、ジャンルごとに確認
     channel_counts = defaultdict(int)
