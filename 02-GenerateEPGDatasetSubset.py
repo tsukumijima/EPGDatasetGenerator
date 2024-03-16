@@ -148,8 +148,8 @@ def main(
             if end_date is not None and datetime.fromisoformat(data.start_time) > end_date:
                 print(f'Skipping (after end date): {data.id}')
                 continue
-            # 放送日時と放送局 ID を含めた一意キーを作成
-            unique_key = (data.id, data.title, data.description)
+            # 一意キーを作成
+            unique_key = (data.title, data.description)
             if unique_key in unique_keys:
                 print(f'Skipping (duplicate): {data.id}')
                 continue
