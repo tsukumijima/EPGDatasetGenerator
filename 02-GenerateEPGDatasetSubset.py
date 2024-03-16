@@ -51,22 +51,34 @@ def get_weight(data: EPGDatasetSubset) -> float:
     # 下記は実際の割合に基づいてサブセット化用の重みを調整している
     ## 定時ニュース: 基本録画されないので重みを減らす
     if data.major_genre_id == 0x0 and data.middle_genre_id == 0x0:
-        weight *= 0.45
-    ## 国内ドラマ: 重要なジャンルなので重みを大きくする
-    elif data.major_genre_id == 0x3 and data.middle_genre_id == 0x0:
+        weight *= 0.5
+    ## スポーツ: 地上波で放送されるもののみ若干重みを大きくする
+    elif data.major_genre_id == 0x1 and is_terrestrial(data.network_id):
+        weight *= 1.1
+    ## 国内ドラマ: 重要なジャンルなので重みを大きくする (地上波のみ)
+    elif data.major_genre_id == 0x3 and data.middle_genre_id == 0x0 and is_terrestrial(data.network_id):
         weight *= 1.8
-    ## 海外ドラマ: 多すぎるので減らす
+    ## 地上波以外 (無料BSなど) の国内ドラマ: 過去の高齢者向け刑事ドラマ系が多すぎるので減らす
+    elif data.major_genre_id == 0x3 and data.middle_genre_id == 0x0 and not is_terrestrial(data.network_id):
+        weight *= 0.25
+    ## 海外ドラマ: 高齢者しか見ない割に多すぎるので全体的に減らす
     elif data.major_genre_id == 0x3 and data.middle_genre_id == 0x1:
         weight *= 0.25
-    ## 映画: 数が少ない割に重要なジャンルなので重みを大きくする
-    elif data.major_genre_id == 0x6:
+    ## バラエティ: 地上波で放送されるもののみ若干重みを大きくする
+    elif data.major_genre_id == 0x5 and is_terrestrial(data.network_id):
+        weight *= 1.1
+    ## 映画: 数が少ない割に重要なジャンルなので重みを大きくする (地上波、無料BSのみ)
+    elif data.major_genre_id == 0x6 and (is_terrestrial(data.network_id) or is_free_bs(data.network_id, data.service_id)):
         weight *= 2.2
         # 特にアニメ映画は少ない割に重要なので重みをさらに大きくする
         if data.middle_genre_id == 0x2:
-            weight *= 1.3
-    ## 国内アニメ: 重要なジャンルなので重みを大きくする
-    elif data.major_genre_id == 0x7 and data.middle_genre_id == 0x0:
-        weight *= 1.7
+            weight *= 1.5
+    ## 国内アニメ: 重要なジャンルなので重みを大きくする (地上波、無料BSのみ)
+    elif data.major_genre_id == 0x7 and data.middle_genre_id == 0x0 and (is_terrestrial(data.network_id) or is_free_bs(data.network_id, data.service_id)):
+        weight *= 1.8
+    ## ドキュメンタリー・教養: 地上波で放送されるもののみ若干重みを大きくする
+    elif data.major_genre_id == 0x8 and is_terrestrial(data.network_id):
+        weight *= 1.1
     ## 趣味・教育: 見る人が少ないので減らす
     elif data.major_genre_id == 0xA:
         weight *= 0.6
@@ -86,7 +98,7 @@ def main(
 ):
     """
     要件：
-    - 地上波: 60%、BS (無料放送): 30%、BS (有料放送) + CS: 10% とする
+    - 地上波: 65%、BS (無料放送): 25%、BS (有料放送) + CS: 10% とする
     - 重複している番組は除外する
     - ショッピング番組は除外する
     - 不明なジャンル ID の番組は除外する
@@ -97,9 +109,9 @@ def main(
     - 最終的に ID でソートされた JSONL データが生成される
     """
 
-    TERRESTRIAL_PERCENTAGE = 0.6
-    FREE_BS_PERCENTAGE = 0.3
-    PAID_BS_CS_PERCENTAGE = 0.1
+    TERRESTRIAL_PERCENTAGE = 0.65
+    FREE_BS_PERCENTAGE = 0.25
+    PAID_BS_CS_PERCENTAGE = 0.10
 
     if subset_path.exists():
         print(f'ファイル {subset_path} は既に存在しています。')
