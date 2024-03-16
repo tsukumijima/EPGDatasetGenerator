@@ -8,7 +8,7 @@ import typer
 from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Union
 
 from utils.constants import EPGDatasetSubset, EPGDatasetSubsetInternal
 
@@ -80,6 +80,8 @@ def main(
     dataset_path: Annotated[Path, typer.Option(help='データ元の JSONL データセットのパス。', exists=True, file_okay=True, dir_okay=False)] = Path('epg_dataset.jsonl'),
     subset_path: Annotated[Path, typer.Option(help='生成するデータセットのサブセットのパス。', dir_okay=False)] = Path('epg_dataset_subset.jsonl'),
     subset_size: Annotated[int, typer.Option(help='生成するデータセットのサブセットのサイズ')] = 5000,
+    start_date: Annotated[Union[datetime, None], typer.Option(help='サブセットとして抽出する番組範囲の開始日時。')] = None,
+    end_date: Annotated[Union[datetime, None], typer.Option(help='サブセットとして抽出する番組範囲の終了日時。')] = None,
 ):
     """
     要件：
@@ -116,6 +118,10 @@ def main(
             all_epg_count += 1
             data = EPGDatasetSubsetInternal.model_validate(obj)
             if meets_condition(data) is False:
+                continue
+            if start_date is not None and datetime.fromisoformat(data.start_time) < start_date:
+                continue
+            if end_date is not None and datetime.fromisoformat(data.start_time) > end_date:
                 continue
             # 放送日時と放送局 ID を含めた一意キーを作成
             unique_key = (data.id, data.title, data.description)
