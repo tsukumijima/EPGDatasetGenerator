@@ -169,17 +169,21 @@ def main(
     print(f'重複を除いた番組数: {len(unique_keys)}')
 
     def sample_data(data_list: list[EPGDatasetSubsetInternal], target_size: int) -> list[EPGDatasetSubsetInternal]:
-        data_list_copy = data_list[:]  # リストの浅いコピーを作成
         sampled_data = []
+        selected_indices = set()
+        data_list_length = len(data_list)
         for _ in range(target_size):
-            if not data_list_copy:  # データリストが空になった場合、ループを抜ける
+            if len(selected_indices) >= data_list_length:  # すべての要素が選択された場合、ループを抜ける
                 break
-            total_weight = sum(data.weight for data in data_list_copy)
+            # 選択されていない要素の重みの合計を計算
+            available_weights = [data.weight if index not in selected_indices else 0 for index, data in enumerate(data_list)]
+            total_weight = sum(available_weights)
             if total_weight == 0:  # すべての要素の重みが0になった場合、ループを抜ける
                 break
-            chosen_data = random.choices(data_list_copy, weights=[data.weight / total_weight for data in data_list_copy], k=1)[0]
-            sampled_data.append(chosen_data)
-            data_list_copy.remove(chosen_data)  # 選択された要素をリストから削除
+            # 重みに基づいて要素をランダムに選択
+            chosen_index = random.choices(range(data_list_length), weights=available_weights, k=1)[0]
+            selected_indices.add(chosen_index)
+            sampled_data.append(data_list[chosen_index])
         return sampled_data
 
     subset_size_terrestrial = int(subset_size * TERRESTRIAL_PERCENTAGE)
