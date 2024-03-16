@@ -14,6 +14,7 @@ app = typer.Typer()
 @app.command()
 def main(
     subset_path: Annotated[Path, typer.Option(help='アノテーションを付加するデータセットのサブセットのパス。', dir_okay=False)] = Path('epg_dataset_subset.jsonl'),
+    start_index: Annotated[int, typer.Option(help='アノテーションを開始するインデックス。', show_default=True)] = 0,
 ):
     """
     アノテーション方針:
@@ -40,7 +41,7 @@ def main(
     typer.echo('=' * 80)
 
     # 現在処理中の EPG データサブセットのインデックス
-    current_index = 0
+    current_index = start_index
 
     def OnClick(
         id: str,

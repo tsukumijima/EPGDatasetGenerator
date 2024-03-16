@@ -13,6 +13,12 @@ from utils.edcb import CtrlCmdUtil, EDCBUtil, ServiceEventInfo
 from utils.epg import FormatString, RemoveSymbols
 
 
+DEFAULT_INCLUDE_NETWORK_IDS = [
+    0x0004,  # BS
+    0x0006,  # CS1
+    0x0007,  # CS2
+]
+
 app = typer.Typer()
 
 @app.command()
