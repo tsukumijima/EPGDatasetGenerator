@@ -17,6 +17,14 @@ DEFAULT_INCLUDE_NETWORK_IDS = [
     0x0004,  # BS
     0x0006,  # CS1
     0x0007,  # CS2
+    32736,   # NHK総合1・東京
+    32737,   # NHKEテレ1東京
+    32738,   # 日テレ
+    32741,   # テレビ朝日
+    32739,   # TBS
+    32742,   # テレビ東京
+    32740,   # フジテレビ
+    32391,   # TOKYO MX
 ]
 
 app = typer.Typer()
@@ -27,6 +35,7 @@ def main(
     edcb_host: Annotated[str, typer.Option(help='ネットワーク接続する EDCB のホスト名。')] = '127.0.0.1',
     start_date: Annotated[datetime, typer.Option(help='過去 EPG データの取得開始日時 (UTC+9) 。')] = datetime.now() - timedelta(days=1),
     end_date: Annotated[datetime, typer.Option(help='過去 EPG データの取得終了日時 (UTC+9)。')] = datetime.now(),
+    include_network_ids: Annotated[list[int], typer.Option(help='取得対象のネットワーク ID のリスト。', show_default=True)] = DEFAULT_INCLUDE_NETWORK_IDS,
 ):
     # 既にファイルが存在している場合は終了
     if dataset_path.exists():
@@ -114,6 +123,10 @@ def main(
                 for event_info in service_event_info['event_list']:
                     assert 'start_time' in event_info
                     assert 'duration_sec' in event_info
+
+                    # 指定したネットワーク ID のみを対象にする
+                    if event_info['onid'] not in include_network_ids:
+                        continue
 
                     # もし short_info がなければ使い物にならんのでスキップ
                     if 'short_info' not in event_info:
