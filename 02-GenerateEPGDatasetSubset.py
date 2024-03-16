@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Annotated, Union
 
 from utils.constants import EPGDatasetSubset, EPGDatasetSubsetInternal
+from utils.edcb import CtrlCmdUtil
 
 
 def is_terrestrial(network_id: int) -> bool:
@@ -104,6 +105,15 @@ def main(
         print(f'ファイル {subset_path} は既に存在しています。')
         return
 
+    # tzinfo が None ならば JST に変換
+    ## この時入力値は常に UTC+9 なので、astimezone() ではなく replace を使う
+    if start_date is not None and start_date.tzinfo is None:
+        start_date = start_date.replace(tzinfo=CtrlCmdUtil.TZ)
+    if end_date is not None and end_date.tzinfo is None:
+        end_date = end_date.replace(tzinfo=CtrlCmdUtil.TZ)
+    print(f'サブセットとして抽出する番組範囲の開始日時: {start_date}')
+    print(f'サブセットとして抽出する番組範囲の終了日時: {end_date}')
+
     start_time = time.time()
 
     all_epg_count = 0  # 重複している番組も含めた全データセットの件数
@@ -118,14 +128,18 @@ def main(
             all_epg_count += 1
             data = EPGDatasetSubsetInternal.model_validate(obj)
             if meets_condition(data) is False:
+                print(f'Skipping (condition not met): {data.id}')
                 continue
             if start_date is not None and datetime.fromisoformat(data.start_time) < start_date:
+                print(f'Skipping (before start date): {data.id}')
                 continue
             if end_date is not None and datetime.fromisoformat(data.start_time) > end_date:
+                print(f'Skipping (after end date): {data.id}')
                 continue
             # 放送日時と放送局 ID を含めた一意キーを作成
             unique_key = (data.id, data.title, data.description)
             if unique_key in unique_keys:
+                print(f'Skipping (duplicate): {data.id}')
                 continue
             unique_keys.add(unique_key)
             print(f'Processing: {data.id}')
