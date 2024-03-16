@@ -109,7 +109,7 @@ def main(
     terrestrial_data: list[EPGDatasetSubsetInternal] = []
     free_bs_data: list[EPGDatasetSubsetInternal] = []
     paid_bs_cs_data: list[EPGDatasetSubsetInternal] = []
-    unique_titles = set()
+    unique_keys = set()
 
     with jsonlines.open(dataset_path, 'r') as reader:
         for obj in reader:
@@ -117,10 +117,11 @@ def main(
             data = EPGDatasetSubsetInternal.model_validate(obj)
             if meets_condition(data) is False:
                 continue
-            title_desc_key = (data.title, data.description)
-            if title_desc_key in unique_titles:
+            # 放送日時と放送局 ID を含めた一意キーを作成
+            unique_key = (data.id, data.title, data.description)
+            if unique_key in unique_keys:
                 continue
-            unique_titles.add(title_desc_key)
+            unique_keys.add(unique_key)
             print(f'Processing: {data.id}')
             data.weight = get_weight(data)
             all_epg_data.append(data)
@@ -133,7 +134,7 @@ def main(
 
     print('-' * 80)
     print(f'データセットに含まれる番組数: {all_epg_count}')
-    print(f'重複を除いた番組数: {len(unique_titles)}')
+    print(f'重複を除いた番組数: {len(unique_keys)}')
 
     def sample_data(data_list: list[EPGDatasetSubsetInternal], target_size: int) -> list[EPGDatasetSubsetInternal]:
         if len(data_list) == 0:
