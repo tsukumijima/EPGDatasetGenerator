@@ -137,6 +137,10 @@ def main(
                     if 'short_info' not in event_info:
                         continue
 
+                    # short_info はあるがタイトルが空文字列ならスキップ
+                    if event_info['short_info']['event_name'] == '':
+                        continue
+
                     # ID: 202301011230-NID32736-SID01024-EID00535 のフォーマット
                     # 最初に番組開始時刻を付けて完全な一意性を担保する
                     epg_id = f"{event_info['start_time'].strftime('%Y%m%d%H%M')}-NID{event_info['onid']:05d}-SID{event_info['sid']:05d}-EID{event_info['eid']:05d}"
