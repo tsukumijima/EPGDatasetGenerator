@@ -15,7 +15,8 @@
 
 ## Usage
 
-EpgDatasetGenerator は3つのツールに分かれています。
+EPGDatasetGenerator は3つのツールに分かれています。  
+それぞれのツールの詳細な使い方は以下の通りです。基本的に順番に実行していくことを想定しています。
 
 ## 01-GenerateEPGDataset.py
 
