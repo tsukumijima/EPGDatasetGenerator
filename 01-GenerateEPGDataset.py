@@ -37,6 +37,10 @@ def main(
     end_date: Annotated[datetime, typer.Option(help='過去 EPG データの取得終了日時 (UTC+9)。')] = datetime.now(),
     include_network_ids: Annotated[list[int], typer.Option(help='取得対象のネットワーク ID のリスト。', show_default=True)] = DEFAULT_INCLUDE_NETWORK_IDS,
 ):
+    """
+    EDCB (EpgTimerSrv) に保存されている過去の EPG データを期間やネットワーク ID を指定して抽出し、JSONL 形式のデータセットを生成する。
+    """
+
     # 既にファイルが存在している場合は終了
     if dataset_path.exists():
         print(f'ファイル {dataset_path} は既に存在しています。')

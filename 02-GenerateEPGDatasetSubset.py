@@ -104,7 +104,9 @@ def main(
     end_date: Annotated[Union[datetime, None], typer.Option(help='サブセットとして抽出する番組範囲の終了日時。')] = None,
 ):
     """
-    要件：
+    JSONL 形式の EPG データセットのサブセットを期間やサイズを指定して生成する。
+
+    動作ロジック:
     - 地上波: 65%、BS (無料放送): 25%、BS (有料放送) + CS: 10% とする
     - 重複している番組は除外する
     - ショッピング番組は除外する
