@@ -274,7 +274,7 @@ def RemoveSymbols(string: str) -> str:
     result = re.sub(r'^ドラマ(\+|パラビ|NEXT|プレミア23|チューズ！|ストリーム)『', '『', result)
     result = re.sub(r'^<BSフジ.*?>', '', result)
     result = re.sub(r'^<名作ドラマ劇場>', '', result)
-    result = re.sub(r'^<(月|火|水|木|金|土|日)ドラ★イレブン>', '', result)
+    result = re.sub(r'^<(月|火|水|木|金|土|日)(ドラ|ドラ★イレブン|曜劇場|曜ドラマ|曜ナイトドラマ)>', '', result)
     result = re.sub(r'^<午後の名作ドラマ劇場>', '', result)
     result = re.sub(r'^(月|火|水|木|金|土|日)(ドラ|曜劇場|曜ドラマ|曜ナイトドラマ) ', '', result)
     result = re.sub(r'^(月|火|水|木|金|土|日)(ドラ|曜劇場|曜ドラマ|曜ナイトドラマ)・', '', result)
