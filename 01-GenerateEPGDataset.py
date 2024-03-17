@@ -124,6 +124,11 @@ def main(
                     assert 'start_time' in event_info
                     assert 'duration_sec' in event_info
 
+                    # デジタルTVサービスのみを対象にする
+                    ## ワンセグや独立データ放送は収集対象外
+                    if service_event_info['service_info']['service_type'] != 0x01:
+                        continue
+
                     # 指定したネットワーク ID のみを対象にする
                     if event_info['onid'] not in include_network_ids:
                         continue
