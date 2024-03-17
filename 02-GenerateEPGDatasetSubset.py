@@ -54,10 +54,10 @@ def get_weight(data: EPGDatasetSubset) -> float:
         weight *= 0.5
     ## スポーツ: 地上波で放送されるもののみ若干重みを大きくする
     elif data.major_genre_id == 0x1 and is_terrestrial(data.network_id):
-        weight *= 1.1
+        weight *= 1.2
     ## 国内ドラマ: 放送数がそう多くない割に重要なジャンルなので重みを大きくする (地上波のみ)
     elif data.major_genre_id == 0x3 and data.middle_genre_id == 0x0 and is_terrestrial(data.network_id):
-        weight *= 3.8
+        weight *= 3.0
     ## 地上波以外 (無料BSなど) の国内ドラマ: 過去の高齢者向け刑事ドラマ系が多すぎるので減らす
     elif data.major_genre_id == 0x3 and data.middle_genre_id == 0x0 and not is_terrestrial(data.network_id):
         weight *= 0.25
@@ -69,10 +69,10 @@ def get_weight(data: EPGDatasetSubset) -> float:
         weight *= 1.1
     ## 映画: 数が少ない割に重要なジャンルなので重みを大きくする (地上波、無料BSのみ)
     elif data.major_genre_id == 0x6 and (is_terrestrial(data.network_id) or is_free_bs(data.network_id, data.service_id)):
-        weight *= 2.2
+        weight *= 2.4
         # 特にアニメ映画は少ない割に重要なので重みをさらに大きくする
         if data.middle_genre_id == 0x2:
-            weight *= 1.5
+            weight *= 1.7
     ## 国内アニメ: 重要なジャンルなので重みを大きくする (地上波、無料BSのみ)
     elif data.major_genre_id == 0x7 and data.middle_genre_id == 0x0 and (is_terrestrial(data.network_id) or is_free_bs(data.network_id, data.service_id)):
         weight *= 1.8
