@@ -125,8 +125,6 @@ def main(
             dataset_list: list[EPGDataset] = []
             for service_event_info in service_event_info_list:
                 for event_info in service_event_info['event_list']:
-                    assert 'start_time' in event_info
-                    assert 'duration_sec' in event_info
 
                     # デジタルTVサービスのみを対象にする
                     ## ワンセグや独立データ放送は収集対象外
@@ -137,8 +135,8 @@ def main(
                     if event_info['onid'] not in include_network_ids:
                         continue
 
-                    # もし short_info がなければ使い物にならんのでスキップ
-                    if 'short_info' not in event_info:
+                    # もし start_time or duration_sec or short_info がなければ中途半端な番組情報なのでスキップ
+                    if 'start_time' not in event_info or 'duration_sec' not in event_info or 'short_info' not in event_info:
                         continue
 
                     # short_info はあるがタイトルが空文字列ならスキップ
