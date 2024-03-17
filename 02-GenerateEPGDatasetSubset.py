@@ -51,10 +51,10 @@ def get_weight(data: EPGDatasetSubset) -> float:
     # 下記は実際の割合に基づいてサブセット化用の重みを調整している
     ## 定時ニュース: 基本録画されないので重みを減らす
     if data.major_genre_id == 0x0 and data.middle_genre_id == 0x0:
-        weight *= 0.5
+        weight *= 0.65
     ## スポーツ: 地上波で放送されるもののみ若干重みを大きくする
     elif data.major_genre_id == 0x1 and is_terrestrial(data.network_id):
-        weight *= 1.2
+        weight *= 1.5
     ## 国内ドラマ: 放送数がそう多くない割に重要なジャンルなので重みを大きくする (地上波のみ)
     elif data.major_genre_id == 0x3 and data.middle_genre_id == 0x0 and is_terrestrial(data.network_id):
         # 朝4時〜17時に放送される主婦向けの再放送や昼ドラを除いて適用する
