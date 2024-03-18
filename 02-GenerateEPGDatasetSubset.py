@@ -63,8 +63,8 @@ def get_weight(data: EPGDatasetSubset) -> float:
         weight *= 0.7
     ## 国内ドラマ: 放送数がそう多くない割に重要なジャンルなので重みを大きくする (地上波のみ)
     if data.major_genre_id == 0x3 and data.middle_genre_id == 0x0 and is_terrestrial(data.network_id):
-        # 朝4時〜17時に放送される主婦向けの再放送や昼ドラを除いて適用する
-        if not (4 <= start_time.hour <= 17):
+        # 朝4時〜18時に放送される主婦向けの再放送や昼ドラを除いて適用する
+        if not (4 <= start_time.hour <= 18):
             weight *= 3.4
     ## 地上波以外 (無料BSなど) の国内ドラマ: 過去の高齢者向け刑事ドラマ系が多すぎるので減らす
     if data.major_genre_id == 0x3 and data.middle_genre_id == 0x0 and not is_terrestrial(data.network_id):
@@ -83,8 +83,8 @@ def get_weight(data: EPGDatasetSubset) -> float:
             weight *= 5.0
     ## 国内アニメ: 重要なジャンルなので重みを大きくする (地上波、無料BSのみ)
     if data.major_genre_id == 0x7 and data.middle_genre_id == 0x0 and (is_terrestrial(data.network_id) or is_free_bs(data.network_id, data.service_id)):
-        # 朝4時〜20時に放送されるアニメを除いて適用する (つまり深夜アニメのみ)
-        if not (4 <= start_time.hour <= 20):
+        # 朝4時〜21時に放送されるアニメを除いて適用する (つまり深夜アニメのみ)
+        if not (4 <= start_time.hour <= 21):
             weight *= 2.2
     ## ドキュメンタリー・教養: 地上波で放送されるもののみ若干重みを大きくする
     if data.major_genre_id == 0x8 and is_terrestrial(data.network_id):
