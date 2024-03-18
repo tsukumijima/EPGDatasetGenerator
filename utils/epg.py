@@ -218,6 +218,8 @@ def RemoveSymbols(string: str) -> str:
     result = re.sub(r'<(レターボックス|スタンダード)サイズ>', '', result)
     result = re.sub(r'<ノーカット字幕>', '', result)
     result = re.sub(r'<(初放送|TV初放送|地上波初放送)>', '', result)
+    result = re.sub(r'\[字幕\]', '', result)
+    result = re.sub(r'\[字幕スーパー\]', '', result)
     result = re.sub(r'〔字幕〕', '', result)
     result = re.sub(r'〔字幕スーパー〕', '', result)
     result = re.sub(r'【字幕】', '', result)
