@@ -101,8 +101,8 @@ def main(
             typer.echo('=' * 80)
             return (
                 gradio.Textbox(value='アノテーションをすべて完了しました！プロセスを終了してください。', label='ID (読み取り専用)', interactive=False),
-                gradio.Textbox(value='', label='番組タイトル (明確に番組枠名や記号の除去にに失敗している場合のみ編集可)', interactive=True),
-                gradio.Textbox(value='', label='番組概要 (明確に番組枠名や記号の除去にに失敗している場合のみ編集可)', interactive=True),
+                gradio.Textbox(value='', label='番組タイトル (明確に番組枠名や記号の除去に失敗している場合のみ編集可)', interactive=True),
+                gradio.Textbox(value='', label='番組概要 (明確に番組枠名や記号の除去に失敗している場合のみ編集可)', interactive=True),
                 gradio.Textbox(value='', label='シリーズタイトル', interactive=True),
                 gradio.Textbox(value='', label='話数 (該当情報がない場合は空欄)', interactive=True),
                 gradio.Textbox(value='', label='サブタイトル (該当情報がない場合は空欄)', interactive=True),
@@ -111,8 +111,8 @@ def main(
         # UI を更新
         return (
             gradio.Textbox(value=subsets[current_index].id, label='ID (読み取り専用)', interactive=False),
-            gradio.Textbox(value=subsets[current_index].title_without_symbols, label='番組タイトル (明確に番組枠名や記号の除去にに失敗している場合のみ編集可)', interactive=True),
-            gradio.Textbox(value=subsets[current_index].description_without_symbols, label='番組概要 (明確に番組枠名や記号の除去にに失敗している場合のみ編集可)', interactive=True),
+            gradio.Textbox(value=subsets[current_index].title_without_symbols, label='番組タイトル (明確に番組枠名や記号の除去に失敗している場合のみ編集可)', interactive=True),
+            gradio.Textbox(value=subsets[current_index].description_without_symbols, label='番組概要 (明確に番組枠名や記号の除去に失敗している場合のみ編集可)', interactive=True),
             gradio.Textbox(value=subsets[current_index].title_without_symbols, label='シリーズタイトル', interactive=True),
             gradio.Textbox(value=subsets[current_index].title_without_symbols, label='話数 (該当情報がない場合は空欄)', interactive=True),
             gradio.Textbox(value=subsets[current_index].title_without_symbols, label='サブタイトル (該当情報がない場合は空欄)', interactive=True),
@@ -126,8 +126,8 @@ def main(
                 Tab キー / Shift + Tab キー を押すと、フォームやボタン間で素早くフォーカスを移動できます。
             """)
             id_box = gradio.Textbox(value='確定ボタンを押して、データセット作成を開始してください。', label='ID (読み取り専用)', interactive=False)
-            title_box = gradio.Textbox(value='', label='番組タイトル (明確に番組枠名や記号の除去にに失敗している場合のみ編集可)', interactive=True)
-            description_box = gradio.Textbox(value='', label='番組概要 (明確に番組枠名や記号の除去にに失敗している場合のみ編集可)', interactive=True)
+            title_box = gradio.Textbox(value='', label='番組タイトル (明確に番組枠名や記号の除去に失敗している場合のみ編集可)', interactive=True)
+            description_box = gradio.Textbox(value='', label='番組概要 (明確に番組枠名や記号の除去に失敗している場合のみ編集可)', interactive=True)
             series_title_box = gradio.Textbox(value='', label='シリーズタイトル', interactive=True)
             episode_number_box = gradio.Textbox(value='', label='話数 (該当情報がない場合は空欄)', interactive=True)
             subtitle_box = gradio.Textbox(value='', label='サブタイトル (該当情報がない場合は空欄)', interactive=True)
